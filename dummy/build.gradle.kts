@@ -1,0 +1,4 @@
+plugins {
+  maven
+  `java-library`
+}
