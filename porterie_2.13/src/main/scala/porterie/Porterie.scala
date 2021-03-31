@@ -22,6 +22,15 @@ object Porterie {
 
   def apply[F[_] : Applicative](
     port: Int,
+    requestMutator: Kleisli[F, Request[F], Request[F]],
+  ) = new Porterie[F](
+    port = port,
+    requestMutator = requestMutator,
+    responseMutator = Kleisli.ask
+  )
+
+  def apply[F[_] : Applicative](
+    port: Int,
     targetUri: Uri
   ) = new Porterie[F](
     port = port,
@@ -35,7 +44,7 @@ final class Porterie[F[_]](
   requestMutator: Kleisli[F, Request[F], Request[F]],
   responseMutator: Kleisli[F, Response[F], Response[F]]
 ) {
-  def start(executionContext: ExecutionContext)(implicit F: Async[F]): F[Nothing] = {
+  def start(executionContext: ExecutionContext)(implicit F: Async[F]): F[Nothing] =
     BlazeClientBuilder[F](executionContext)
       .resource
       .flatMap(client =>
@@ -48,5 +57,4 @@ final class Porterie[F[_]](
           .resource
       )
       .useForever
-  }
 }
