@@ -17,10 +17,12 @@ package object porterie {
     )
 
 
-  def xForwarded[F[_] : Applicative](targetUri: Uri): Kleisli[F, Request[F], Request[F]] =
-    Kleisli.fromFunction(r => r
-      .withUri(targetUri)
-      .putHeaders(
-        prepended(r.headers, "X-Forwarded-For", r.remote.fold("unknown")(_.host.toString))
-      ))
+  def xForwarded[F[_] : Applicative](uriConversion: Uri => Uri): Kleisli[F, Request[F], Request[F]] =
+    Kleisli.fromFunction(
+      r => r
+        .withUri(uriConversion(r.uri))
+        .putHeaders(
+          prepended(r.headers, "X-Forwarded-For", r.remote.fold("unknown")(_.host.toString))
+        )
+    )
 }
