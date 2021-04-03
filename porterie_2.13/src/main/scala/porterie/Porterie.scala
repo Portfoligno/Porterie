@@ -37,6 +37,7 @@ final class Porterie[F[_]] private (
 ) {
   def start(executionContext: ExecutionContext)(implicit F: Async[F]): F[Nothing] =
     BlazeClientBuilder[F](executionContext)
+      .withoutUserAgent
       .resource
       .flatMap(client =>
         BlazeServerBuilder[F](executionContext)
