@@ -1,28 +1,25 @@
 
 import cats.Applicative
 import cats.data.Kleisli
+import org.http4s.Request.Connection
+import org.http4s.Request.Keys.ConnectionInfo
 import org.http4s.{Header, Headers, Request, Uri}
-import org.typelevel.ci._
-
-import scala.collection.View
+import porterie.internal.XForwardedHeaders
 
 package object porterie {
   private
-  def joinWithCommas(strings: View[String]) = strings.mkString(",")
-
-  private
-  def prepended(headers: Headers, key: String, value: String): Header.ToRaw =
-    key -> joinWithCommas(
-      View(value) ++ headers.get(CIString(key)).view.flatMap(_.iterator).map(_.value)
-    )
-
-
-  def xForwarded[F[_] : Applicative](uriConversion: Uri => Uri): Kleisli[F, Request[F], Request[F]] =
+  def convertUriAndHeaders[F[_] : Applicative](
+    uriConversion: Uri => Uri,
+    headersConversion: (Headers, Option[Connection]) => List[Header.Raw]
+  ): Kleisli[F, Request[F], Request[F]] =
     Kleisli.fromFunction(
       r => r
         .withUri(uriConversion(r.uri))
-        .putHeaders(
-          prepended(r.headers, "X-Forwarded-For", r.remote.fold("unknown")(_.host.toString))
-        )
+        .withHeaders(new Headers(
+          headersConversion(r.headers, r.attributes lookup ConnectionInfo)
+        ))
     )
+
+  def xForwarded[F[_] : Applicative](uriConversion: Uri => Uri): Kleisli[F, Request[F], Request[F]] =
+    convertUriAndHeaders(uriConversion, XForwardedHeaders.prependElements)
 }
