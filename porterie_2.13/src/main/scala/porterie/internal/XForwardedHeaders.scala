@@ -39,13 +39,13 @@ object XForwardedHeaders {
   )
 
   def prependElements(headers: Headers, connection: Option[Connection]): List[Header.Raw] = {
-    val hostHeader = headers.get[Host]
+    val hostHeader = headers.get[Host] >>= forwardedHost
 
     val newElements = xForwardedHeaderNames.view zip Seq(
       connection.fold("unknown")(ipAddressToString show _.local.host),
       connection.fold("unknown")(ipAddressToString show _.remote.host),
       connection.fold("unknown")(c => if (!c.secure) "http" else "https"),
-      hostHeader.fold("unknown")(_.host),
+      hostHeader.fold("unknown")(_.host.value),
       (
         (hostHeader >>= (_.port)) <+> connection.map(c => if (!c.secure) 80 else 443)
       )
