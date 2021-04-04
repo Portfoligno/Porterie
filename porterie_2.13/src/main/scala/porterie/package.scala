@@ -4,7 +4,7 @@ import cats.data.Kleisli
 import org.http4s.Request.Connection
 import org.http4s.Request.Keys.ConnectionInfo
 import org.http4s.{Header, Headers, Request, Uri}
-import porterie.internal.XForwardedHeaders
+import porterie.internal.{ForwardedHeaders, XForwardedHeaders}
 
 package object porterie {
   private
@@ -22,4 +22,7 @@ package object porterie {
 
   def xForwarded[F[_] : Applicative](uriConversion: Uri => Uri): Kleisli[F, Request[F], Request[F]] =
     convertUriAndHeaders(uriConversion, XForwardedHeaders.prependElements)
+
+  def forwarded[F[_] : Applicative](uriConversion: Uri => Uri): Kleisli[F, Request[F], Request[F]] =
+    convertUriAndHeaders(uriConversion, ForwardedHeaders.prependElement)
 }
