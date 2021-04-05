@@ -3,6 +3,7 @@ package porterie
 import cats.Applicative
 import cats.data.Kleisli
 import cats.effect.Async
+import cats.syntax.compose._
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.{Request, Response}
@@ -42,10 +43,9 @@ final class Porterie[F[_]] private (
       .flatMap(client =>
         BlazeServerBuilder[F](executionContext)
           .bindHttp(port, "0.0.0.0")
-          .withHttpApp(client
-            .toHttpApp
-            .compose(requestConversion)
-            .andThen(responseConversion))
+          .withHttpApp(
+            responseConversion <<< client.toHttpApp <<< requestConversion
+          )
           .resource
       )
       .useForever

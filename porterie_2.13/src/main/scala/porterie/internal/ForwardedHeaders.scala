@@ -1,9 +1,10 @@
 package porterie.internal
 
-import cats.arrow.Compose
-import cats.data.{Cokleisli, NonEmptyList}
+import cats.data.NonEmptyList
 import cats.instances.all._
+import cats.syntax.compose._
 import cats.syntax.flatMap._
+import cats.syntax.option._
 import cats.{FlatMap, Id}
 import com.comcast.ip4s.{IpAddress, Ipv4Address, Ipv6Address, SocketAddress}
 import org.http4s.Request.Connection
@@ -16,7 +17,7 @@ import org.typelevel.ci._
 
 private[porterie]
 object ForwardedHeaders {
-  private val render = (Header[Forwarded].value _).compose(Forwarded.apply)
+  private val render = Header[Forwarded].value _ <<< Forwarded.apply
 
   private val forwardedNode: SocketAddress[IpAddress] => Node = {
     case SocketAddress(host: Ipv4Address, port) => Node(Name.Ipv4(host), Port.Numeric(port.value))
@@ -39,10 +40,7 @@ object ForwardedHeaders {
       )
     )
     val newElement =
-      Compose[({ type L[A, B] = Cokleisli[Option, A, B] })#L]
-        .algebra[Element]
-        .combineAllOption(forwardedPairs.flatten map Cokleisli.apply)
-        .fold(forUnknown)(_ run None)
+      forwardedPairs.flatten.reduceOption(_ >>> (_.some) >>> _).fold(forUnknown)(_(None))
 
     val (prefix, (forwarded, suffix)) =
       FlatMap[Id].tailRecM(List.empty[Header.Raw] -> headers.headers) {
