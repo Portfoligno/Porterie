@@ -5,7 +5,6 @@ import cats.instances.all._
 import cats.syntax.alternative._
 import cats.syntax.either._
 import cats.syntax.flatMap._
-import cats.syntax.semigroupk._
 import com.comcast.ip4s.IpAddress
 import org.http4s.Header.Raw
 import org.http4s.Request.Connection
@@ -15,6 +14,7 @@ import org.http4s.headers.Forwarded.Node.{Name, Obfuscated}
 import org.http4s.headers.{Forwarded, Host}
 import org.http4s.{Header, Headers}
 import org.typelevel.ci._
+import porterie.experimental.syntax.semigroupk._
 
 import scala.collection.View
 import scala.collection.immutable.ListSet
