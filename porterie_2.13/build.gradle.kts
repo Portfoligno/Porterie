@@ -10,7 +10,7 @@ dependencies {
   api("io.github.portfoligno.micrixalus", "scala_$v", "1.1.0")
   api("io.github.portfoligno.micrixalus", "scala-predef_$v", "1.1.0")
 
-  implementation("org.http4s", "http4s-blaze-server_$v", "1.0.0-M20")
-  implementation("org.http4s", "http4s-blaze-client_$v", "1.0.0-M20")
-  api("org.http4s", "http4s-dsl_$v", "1.0.0-M20")
+  implementation("org.http4s", "http4s-blaze-server_$v", "1.0.0-M21")
+  implementation("org.http4s", "http4s-blaze-client_$v", "1.0.0-M21")
+  api("org.http4s", "http4s-dsl_$v", "1.0.0-M21")
 }
