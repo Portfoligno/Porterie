@@ -1,6 +1,6 @@
 package porterie.data
 
-import cats.parse.Parser.{anyChar, char, charIn, not, until0}
+import cats.parse.Parser.{anyChar, char, charIn, not, string, until0}
 import cats.syntax.compose._
 import cats.syntax.option._
 import org.http4s.Uri._
@@ -61,7 +61,7 @@ object BaseUri {
     )
 
     // Putting together
-    (userInfo.backtrack.? ~ host ~ path).map {
+    (string("://") *> userInfo.backtrack.? ~ host ~ path).map {
       case ((userInfo, (port, host)), path) =>
         BaseUri(_, Authority(userInfo, host, port), path)
     }
