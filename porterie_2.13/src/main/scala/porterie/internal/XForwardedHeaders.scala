@@ -38,7 +38,7 @@ object XForwardedHeaders {
     ci"X-Forwarded-Port"
   )
 
-  def prependElements(headers: Headers, connection: Option[Connection]): List[Header.Raw] = {
+  def appendElements(headers: Headers, connection: Option[Connection]): List[Header.Raw] = {
     val hostHeader = headers.get[Host] >>= forwardedHost
 
     val newElements = xForwardedHeaderNames.view zip Seq(
@@ -88,7 +88,7 @@ object XForwardedHeaders {
           .fold("unknown")(Show[Int].show)
     ))
 
-    others ++ (newElements ++ convertedElements ++ oldElements).groupMap(_._1)(_._2).view.map {
+    others ++ (oldElements.view ++ convertedElements ++ newElements).groupMap(_._1)(_._2).view.map {
       case (name, values) =>
         new Header.Raw(name, (values: View[String]).mkString(","))
     }

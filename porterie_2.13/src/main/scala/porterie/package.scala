@@ -21,8 +21,8 @@ package object porterie {
     )
 
   def xForwarded[F[_] : Applicative](uriConversion: Uri => Uri): Kleisli[F, Request[F], Request[F]] =
-    convertUriAndHeaders(uriConversion, XForwardedHeaders.prependElements)
+    convertUriAndHeaders(uriConversion, XForwardedHeaders.appendElements)
 
   def forwarded[F[_] : Applicative](uriConversion: Uri => Uri): Kleisli[F, Request[F], Request[F]] =
-    convertUriAndHeaders(uriConversion, ForwardedHeaders.prependElement)
+    convertUriAndHeaders(uriConversion, ForwardedHeaders.appendElement)
 }

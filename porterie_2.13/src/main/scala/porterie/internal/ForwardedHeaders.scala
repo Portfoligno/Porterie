@@ -25,7 +25,7 @@ object ForwardedHeaders {
   }
   private val forUnknown = Element.fromFor(Node(Name.Unknown))
 
-  def prependElement(headers: Headers, connection: Option[Connection]): List[Header.Raw] = {
+  def appendElement(headers: Headers, connection: Option[Connection]): List[Header.Raw] = {
     val forwardedPairs = Seq[Option[Option[Element] => Element]](
       connection.map {
         case Connection(local, remote, secure) =>
@@ -42,23 +42,23 @@ object ForwardedHeaders {
     val newElement =
       forwardedPairs.flatten.reduceOption(_ >>> (_.some) >>> _).fold(forUnknown)(_(None))
 
-    val (prefix, (forwarded, suffix)) =
-      FlatMap[Id].tailRecM(List.empty[Header.Raw] -> headers.headers) {
-        case (prefix, Nil) =>
-          Right(prefix -> (None -> Nil))
+    val (suffix, (forwarded, prefix)) =
+      FlatMap[Id].tailRecM(List.empty[Header.Raw] -> headers.headers.reverse) {
+        case (suffix, Nil) =>
+          Right(suffix -> (None -> Nil))
 
-        case (prefix, suffix @ Header.Raw(ci"Forwarded", value) :: tail) =>
-          Right(prefix -> Forwarded.parse(value).fold(
-            _ => None -> suffix,
+        case (suffix, prefix @ Header.Raw(ci"Forwarded", value) :: tail) =>
+          Right(suffix -> Forwarded.parse(value).fold(
+            _ => None -> prefix,
             forwarded => Some(forwarded.values) -> tail
           ))
 
-        case (prefix, h :: tail) =>
-          Left((h :: prefix) -> tail)
+        case (suffix, h :: tail) =>
+          Left((h :: suffix) -> tail)
       }
 
     val combinedElements =
-      Header.Raw(ci"Forwarded", render(forwarded.fold(NonEmptyList.one(newElement))(newElement :: _)))
+      Header.Raw(ci"Forwarded", render(forwarded.fold(NonEmptyList.one(newElement))(_ :+ newElement)))
 
     prefix reverse_::: combinedElements :: suffix
   }
