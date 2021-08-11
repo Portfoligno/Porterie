@@ -4,12 +4,11 @@ import cats.Applicative
 import cats.data.Kleisli
 import cats.effect.Async
 import cats.syntax.compose._
-import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
+import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.{Request, Response}
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.Duration.Inf
 import scala.concurrent.duration.{Duration, _}
 
 object Porterie {
