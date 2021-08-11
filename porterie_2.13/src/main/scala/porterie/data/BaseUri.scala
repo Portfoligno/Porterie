@@ -3,6 +3,7 @@ package porterie.data
 import cats.parse.Parser.{anyChar, char, charIn, not, string, until0}
 import cats.syntax.compose._
 import cats.syntax.option._
+import org.http4s.Uri.Path.Segment
 import org.http4s.Uri._
 import org.http4s.{Uri, headers}
 import porterie.experimental.syntax.semigroupk._
@@ -15,6 +16,9 @@ final case class BaseUri(
   path: Path = Path.empty
 ) {
   def toUri: Uri = Uri(Some(scheme), Some(authority), path)
+
+  def /(newSegment: String): BaseUri =
+    copy(path = path / Segment.encoded(pathEncode(newSegment)))
 
   override
   def toString: String = toUri.toString
